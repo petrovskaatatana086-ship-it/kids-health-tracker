@@ -131,6 +131,13 @@
             width: 100%;
         }
 
+        .temp-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            align-items: center;
+        }
+
         /* Индикатор офлайн режима */
         #offline-indicator {
             position: fixed;
@@ -197,11 +204,11 @@
     <div id="screen-stats" class="hidden px-6 pt-4 space-y-6 pb-36 max-w-xl mx-auto animate-modal">
         <h3 class="text-3xl font-extrabold px-2">Аналитика</h3>
         <div class="grid grid-cols-2 gap-4" id="stats-summary">
-            <div class="bg-[#1A1C2E] p-6 rounded-[2rem] text-white shadow-xl">
+            <div class="bg-[#1A1C2E] p-6 rounded-[2rem] text-white shadow-xl border border-white/10">
                 <p id="total-illnesses" class="text-4xl font-bold mb-2">0</p>
                 <p class="text-[9px] font-black uppercase tracking-widest opacity-60">Всего болезней</p>
             </div>
-            <div class="bg-indigo-600 p-6 rounded-[2rem] text-white shadow-xl">
+            <div class="bg-indigo-600 p-6 rounded-[2rem] text-white shadow-xl border border-white/10">
                 <p id="total-antibiotics" class="text-4xl font-bold mb-2">0</p>
                 <p class="text-[9px] font-black uppercase tracking-widest opacity-60">Курсов антиб.</p>
             </div>
@@ -470,10 +477,37 @@
                         <div class="flex justify-between items-center mb-3 px-1"><p class="text-[9px] font-black uppercase text-indigo-400 tracking-widest">Вызовы врача</p><button onclick="addVisitRow()" class="text-indigo-600 text-[10px] font-black uppercase tracking-widest">+ Добавить</button></div>
                         <div id="visit-list-form"></div>
                     </div>
+
+                    <!-- ТЕМПЕРАТУРА -->
+                    <div class="space-y-4">
+                        <p class="text-[11px] font-black uppercase text-indigo-500 tracking-[0.2em] mb-3 ml-1">Температура (°C)</p>
+                        ${[1,2,3].map(d => `
+                            <div class="temp-grid">
+                                <span class="text-xs font-bold text-gray-400 uppercase">День ${d}:</span>
+                                <div class="flex gap-2 items-center">
+                                    <input type="number" id="f-t${d}-from" step="0.1" value="${data && data.temps ? data.temps[d].from : '36.6'}" class="ios-input text-center text-xs">
+                                    <input type="number" id="f-t${d}-to" step="0.1" value="${data && data.temps ? data.temps[d].to : '36.6'}" class="ios-input text-center text-xs">
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="hybrid-card p-5 bg-white/30">
+                        <div class="flex items-center justify-between">
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" id="f-more3" ${data && data.hasLongFever ? 'checked' : ''} onchange="document.getElementById('f-days-box').classList.toggle('hidden')" class="w-6 h-6 accent-indigo-600 rounded-lg">
+                                <span class="text-xs font-bold text-gray-600 uppercase tracking-widest">Более 3 дней?</span>
+                            </label>
+                            <div id="f-days-box" class="${data && data.hasLongFever ? '' : 'hidden'}">
+                                <input type="number" id="f-days" placeholder="Дни" class="ios-input w-20 text-center font-bold" value="${data ? data.feverDays : ''}">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="space-y-3">
                         <p class="text-[11px] font-black uppercase text-indigo-500 px-1">Лекарства и схема</p>
                         <div id="med-list-form"></div>
-                        <button onclick="addMedRow()" class="w-full py-4 rounded-3xl border-2 border-dashed border-gray-200 text-gray-400 text-xs font-bold">+ Добавить лекарство</button>
+                        <button onclick="addMedRow()" class="w-full py-3 rounded-xl border-2 border-dashed border-gray-200 text-gray-400 text-xs font-bold">+ Добавить</button>
                     </div>
                     <textarea id="f-notes" placeholder="Особенности лечения / Заметки..." class="ios-input h-32">${data?.notes || ''}</textarea>
                     <div class="flex gap-4 pt-6"><button onclick="closeModal()" class="flex-1 py-5 font-bold text-gray-400">Отмена</button><button onclick="saveEntry()" class="flex-[2] bg-indigo-600 text-white py-5 rounded-[1.5rem] font-bold shadow-xl">Сохранить</button></div>
@@ -511,6 +545,13 @@
         }
         
         function saveEntry() {
+            const temps = {};
+            [1,2,3].forEach(d => {
+                const fromVal = document.getElementById(`f-t${d}-from`).value;
+                const toVal = document.getElementById(`f-t${d}-to`).value;
+                temps[d] = { from: fromVal, to: toVal };
+            });
+
             const meds = [];
             document.querySelectorAll('#med-list-form .med-row').forEach(row => {
                 const n = row.querySelector('.med-name')?.value;
@@ -531,10 +572,29 @@
             const cId = document.getElementById('f-child').value;
             const notes = document.getElementById('f-notes').value;
             const recDate = document.getElementById('f-recovery').value;
+            const hasLongFever = document.getElementById('f-more3').checked;
+            const feverDays = document.getElementById('f-days').value;
             
-            const ent = { id: editingId || Date.now(), childId: cId, date: document.getElementById('f-date').value, diagnosis: document.getElementById('f-diagnosis').value, recoveryDate: recDate, visits, medications: meds, notes };
-            if (editingId) { const idx = db.entries.findIndex(e => e.id === editingId); db.entries[idx] = ent; }
-            else db.entries.push(ent);
+            const ent = { 
+                id: editingId || Date.now(), 
+                childId: cId, 
+                date: document.getElementById('f-date').value, 
+                diagnosis: document.getElementById('f-diagnosis').value, 
+                recoveryDate: recDate, 
+                visits, 
+                medications: meds, 
+                notes,
+                temps,
+                hasLongFever,
+                feverDays
+            };
+            
+            if (editingId) { 
+                const idx = db.entries.findIndex(e => e.id === editingId); 
+                db.entries[idx] = ent; 
+            } else {
+                db.entries.push(ent);
+            }
             save(); closeModal(); render();
         }
 
@@ -558,34 +618,14 @@
             window.addEventListener('load', () => {
                 const swScript = `
                     const CACHE_NAME = 'kh-cache-v1';
-                    const urlsToCache = [
-                        './',
-                        'https://cdn.tailwindcss.com',
-                        'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'
-                    ];
-
-                    self.addEventListener('install', event => {
-                        event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));
-                    });
-
-                    self.addEventListener('fetch', event => {
-                        event.respondWith(
-                            caches.match(event.request).then(response => response || fetch(event.request))
-                        );
-                    });
+                    const urlsToCache = ['./', 'https://cdn.tailwindcss.com'];
+                    self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(urlsToCache))));
+                    self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
                 `;
                 const blob = new Blob([swScript], { type: 'text/javascript' });
-                const swUrl = URL.createObjectURL(blob);
-                
-                if (window.location.protocol === 'https:' || window.location.hostname === 'localhost') {
-                    navigator.serviceWorker.register(swUrl).catch(() => {});
-                }
+                navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
             });
         }
-
-        // Мониторинг сети
-        window.addEventListener('online', () => document.getElementById('offline-indicator').style.display = 'none');
-        window.addEventListener('offline', () => document.getElementById('offline-indicator').style.display = 'block');
 
         window.onload = () => { renderChildrenTabs(); render(); };
     </script>
