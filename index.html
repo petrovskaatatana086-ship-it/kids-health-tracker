@@ -9,10 +9,13 @@
     <meta name="theme-color" content="#F0F2F5">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👶</text></svg>">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👶</text></svg>">
+    <meta name="apple-mobile-web-app-title" content="KidsHealth">
     
-    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIktpZHMgSGVhbHRoIiwKICAic2hvcnRfbmFtZSI6ICJLaWRzSGVhbHRoIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNGMEYyRjUiLAogICJ0aGVtZV9jb2xvciI6ICIjNjM2NmYxIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9jZG4taWNvbnMtcG5nLmZsaXRpY29uLmNvbS81MTIvMjg2NC8yODY0Mjc3LnBuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIgogICAgfQogIF0KfQ==">
+    <!-- Обновленная иконка с эмодзи 👶 для установки на телефон -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%236366f1'/><text x='50' y='72' text-anchor='middle' font-size='65'>👶</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%236366f1'/><text x='50' y='72' text-anchor='middle' font-size='65'>👶</text></svg>">
+    
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIktpZHMgSGVhbHRoIiwKICAic2hvcnRfbmFtZSI6ICJLaWRzSGVhbHRoIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNGMEYyRjUiLAogICJ0aGVtZV9jb2xvciI6ICIjNjM2NmYxIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sLDxzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgMTAwIDEwMCc+PHJlY3Qgd2lkdGg9JzEwMCcgaGVpZ2h0PScxMDAnIHJ4PScyMicgZmlsbD0nJTIzNjM2NmYxJy8+PHRleHQgeD0nNTAnIHk9JzcyJyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyBmb250LXNpemU9JzY1Jz7wn5G2PC90ZXh0Pjwvc3ZnPiIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIgogICAgfQogIF0KfQ==">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -243,7 +246,7 @@
     <script>
         // --- База данных ---
         let db = JSON.parse(localStorage.getItem('kh_v12_final')) || {
-            children: [{ id: 1, name: "Сын", icon: "🚀", weight: "18.5", age: "5" }, { id: 2, name: "Дочь", icon: "🐣", weight: "12.2", age: "3" }],
+            children: [{ id: 1, name: "Сын", icon: "👦", weight: "18.5", age: "5" }, { id: 2, name: "Дочь", icon: "👧", weight: "12.2", age: "3" }],
             entries: [],
             vaccinations: []
         };
@@ -302,7 +305,7 @@
                 const isHealthy = !last || (last.recoveryDate && last.recoveryDate.trim() !== "");
                 
                 // Определение пола по иконке для правильного окончания
-                const genderSuffix = (child.icon === '🐣') ? 'а' : '';
+                const genderSuffix = (child.icon === '👧' || child.icon === '👶') ? 'а' : '';
                 const healthyText = `Здоров${genderSuffix}`;
 
                 const statusLabel = isHealthy ? healthyText : (last.diagnosis || "Болеет");
@@ -370,7 +373,7 @@
                                 </div>
                                 <div class="flex flex-wrap gap-2 mb-3">${e.recoveryDate ? `<span class="px-2 py-1 bg-emerald-50 text-emerald-600 text-[9px] font-black rounded-xl border border-emerald-100 uppercase">✨ Вылечен: ${new Date(e.recoveryDate).toLocaleDateString()}</span>` : ''}</div>
                                 <div class="mb-3">${visitsHtml}</div>
-                                <div class="text-xs text-gray-500 italic mb-3">${e.notes || ''}</div>
+                                <div class="text-xs text-gray-500 italic mb-2">${e.notes || ''}</div>
                                 <div class="space-y-1">${medsHtml}</div>
                             </div>
                         </div>`;
@@ -400,7 +403,7 @@
             }
             if(activeTab === 'tools') {
                 const info = document.getElementById('calc-child-info');
-                if(info) info.innerText = currentChild === 'all' ? "Ручной ввод" : `Ребенок: ${db.children.find(c => c.id == currentChild)?.name}`;
+                if(info) info.innerText = "Ручной ввод";
                 calculateDosageManually();
             }
         }
@@ -408,6 +411,25 @@
         // --- Управление Модальными Окнами ---
         function openModal(content) { document.getElementById('modal-body').innerHTML = content; document.getElementById('modal-overlay').classList.remove('hidden'); }
         function closeModal() { document.getElementById('modal-overlay').classList.add('hidden'); editingId = null; }
+
+        function editChildProfile(id) { 
+            const child = db.children.find(c => c.id == id); 
+            openModal(`<h3 class="text-3xl font-extrabold mb-8">Профиль</h3><div class="space-y-6"><input type="text" id="e-name" value="${child.name}" class="ios-input font-bold"><input type="number" id="e-age" value="${child.age || ''}" class="ios-input font-bold" placeholder="Возраст"><input type="number" id="e-weight" step="0.1" value="${child.weight || ''}" class="ios-input font-bold" placeholder="Вес (кг)"><div class="flex gap-4 pt-6"><button onclick="closeModal()" class="flex-1 py-5 font-bold text-gray-400">Отмена</button><button onclick="updateChild(${child.id})" class="flex-[2] bg-indigo-600 text-white py-5 rounded-[1.5rem] font-bold shadow-xl">Сохранить</button></div></div>`); 
+        }
+        function updateChild(id) { 
+            const c = db.children.find(child => child.id == id); 
+            c.name = document.getElementById('e-name').value; 
+            c.weight = document.getElementById('e-weight').value; 
+            c.age = document.getElementById('e-age').value; 
+            save(); closeModal(); render(); 
+        }
+        function showChildModal() { 
+            openModal(`<h3 class="text-3xl font-extrabold mb-8 text-center">Новый профиль</h3><div class="space-y-6"><div class="flex justify-center gap-5 mb-6" id="icon-picker" data-icon="👶"><button onclick="document.getElementById('icon-picker').dataset.icon='👦'" class="w-16 h-16 hybrid-card text-2xl flex items-center justify-center">👦</button><button onclick="document.getElementById('icon-picker').dataset.icon='👧'" class="w-16 h-16 hybrid-card text-2xl flex items-center justify-center">👧</button><button onclick="document.getElementById('icon-picker').dataset.icon='👶'" class="w-16 h-16 hybrid-card text-2xl flex items-center justify-center">👶</button></div><input type="text" id="c-name" placeholder="Имя" class="ios-input text-center text-lg font-bold shadow-sm"><input type="number" id="c-age" placeholder="Возраст" class="ios-input text-center"><div class="flex gap-4 pt-4"><button onclick="closeModal()" class="flex-1 py-5 font-bold text-gray-400">Отмена</button><button onclick="saveChild()" class="flex-[2] bg-indigo-600 text-white py-5 rounded-[1.5rem] font-bold shadow-xl">Создать</button></div></div>`); 
+        }
+        function saveChild() { 
+            const n = document.getElementById('c-name').value; 
+            if(n) { db.children.push({ id: Date.now(), name: n, icon: document.getElementById('icon-picker').dataset.icon, weight: "", age: document.getElementById('c-age').value }); save(); closeModal(); renderChildrenTabs(); render(); } 
+        }
 
         function openIllnessModal(id = null) {
             editingId = id; 
@@ -425,7 +447,7 @@
                         <input type="date" id="f-recovery" class="ios-input" value="${data?.recoveryDate || ''}">
                     </div>
                     <div class="hybrid-card p-5 bg-indigo-50/30">
-                        <div class="flex justify-between items-center mb-3 px-1"><p class="text-[9px] font-black uppercase text-indigo-400 tracking-widest">Вызовы врача</p><button onclick="addVisitRow()" class="text-indigo-600 text-[10px] font-black uppercase">+ Добавить</button></div>
+                        <div class="flex justify-between items-center mb-3 px-1"><p class="text-[9px] font-black uppercase text-indigo-400 tracking-widest">Вызовы врача</p><button onclick="addVisitRow()" class="text-indigo-600 text-[10px] font-black uppercase tracking-widest">+ Добавить</button></div>
                         <div id="visit-list-form"></div>
                     </div>
                     <div class="space-y-3">
@@ -496,16 +518,20 @@
             save(); closeModal(); render();
         }
 
-        // --- Вспомогательные функции ---
-        function editChildProfile(id) { const child = db.children.find(c => c.id == id); openModal(`<h3 class="text-3xl font-extrabold mb-8">Профиль</h3><div class="space-y-6"><input type="text" id="e-name" value="${child.name}" class="ios-input font-bold"><input type="number" id="e-age" value="${child.age || ''}" class="ios-input font-bold" placeholder="Возраст"><input type="number" id="e-weight" step="0.1" value="${child.weight || ''}" class="ios-input font-bold" placeholder="Вес (кг)"><div class="flex gap-4 pt-6"><button onclick="closeModal()" class="flex-1 py-5 font-bold text-gray-400">Отмена</button><button onclick="updateChild(${child.id})" class="flex-[2] bg-indigo-600 text-white py-5 rounded-[1.5rem] font-bold shadow-xl">Сохранить</button></div></div>`); }
-        function updateChild(id) { const c = db.children.find(child => child.id == id); c.name = document.getElementById('e-name').value; c.weight = document.getElementById('e-weight').value; c.age = document.getElementById('e-age').value; save(); closeModal(); render(); }
-        function showChildModal() { openModal(`<h3 class="text-3xl font-extrabold mb-8 text-center">Новый профиль</h3><div class="space-y-6"><div class="flex justify-center gap-5 mb-6" id="icon-picker" data-icon="🚀"><button onclick="document.getElementById('icon-picker').dataset.icon='🚀'" class="w-16 h-16 hybrid-card text-2xl flex items-center justify-center">🚀</button><button onclick="document.getElementById('icon-picker').dataset.icon='🚂'" class="w-16 h-16 hybrid-card text-2xl flex items-center justify-center">🚂</button><button onclick="document.getElementById('icon-picker').dataset.icon='🐣'" class="w-16 h-16 hybrid-card text-2xl flex items-center justify-center">🐣</button></div><input type="text" id="c-name" placeholder="Имя" class="ios-input text-center text-lg font-bold shadow-sm"><input type="number" id="c-age" placeholder="Возраст" class="ios-input text-center"><div class="flex gap-4 pt-4"><button onclick="closeModal()" class="flex-1 py-5 font-bold text-gray-400">Отмена</button><button onclick="saveChild()" class="flex-[2] bg-indigo-600 text-white py-5 rounded-[1.5rem] font-bold shadow-xl">Создать</button></div></div>`); }
-        function saveChild() { const n = document.getElementById('c-name').value; if(n) { db.children.push({ id: Date.now(), name: n, icon: document.getElementById('icon-picker').dataset.icon, weight: "", age: document.getElementById('c-age').value }); save(); closeModal(); renderChildrenTabs(); render(); } }
+        function exportToExcel() {
+            let csv = "\uFEFFРебенок;Дата;Диагноз;Выздоровление;Лекарства;Заметки\n";
+            db.entries.forEach(e => {
+                const c = db.children.find(ch => ch.id == e.childId)?.name;
+                const m = (e.medications || []).map(med => med.name).join(' | ');
+                csv += `"${c}";"${new Date(e.date).toLocaleDateString()}";"${e.diagnosis}";"${e.recoveryDate || '-'}";"${m}";"${(e.notes || '').replace(/"/g, '""')}"\n`;
+            });
+            const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" })); link.download = `kidshealth_export.csv`; link.click();
+        }
+
         function openVaccineModal() { openModal(`<h3 class="text-3xl font-extrabold mb-8">Прививка</h3><div class="space-y-6"><select id="v-child" class="ios-input font-bold">${db.children.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select><input type="text" id="v-name" placeholder="Название" class="ios-input font-bold"><div class="grid grid-cols-2 gap-4"><input type="date" id="v-date" class="ios-input"><select id="v-status" class="ios-input font-bold"><option value="planned">Запланирована</option><option value="done">Сделана</option></select></div><div class="flex gap-4 pt-6"><button onclick="closeModal()" class="flex-1 py-5 font-bold text-gray-400">Отмена</button><button onclick="saveVaccine()" class="flex-[2] bg-emerald-500 text-white py-5 rounded-[1.5rem] font-bold shadow-xl">Сохранить</button></div></div>`); }
         function saveVaccine() { const cs = document.getElementById('v-child'); const v = { id: Date.now(), childId: cs.value, name: document.getElementById('v-name').value, date: document.getElementById('v-date').value, status: document.getElementById('v-status').value }; if(v.name && v.date) { db.vaccinations.push(v); save(); closeModal(); render(); } }
         function deleteEntry(id) { if(confirm('Удалить?')) { db.entries = db.entries.filter(e => e.id !== id); save(); render(); } }
         function deleteVaccine(id) { if(confirm('Удалить?')) { db.vaccinations = db.vaccinations.filter(v => v.id !== id); save(); render(); } }
-        function exportToExcel() { let csv = "\uFEFFРебенок;Дата;Диагноз;Выздоровление;Лекарства;Заметки\n"; db.entries.forEach(e => { const c = db.children.find(ch => ch.id == e.childId)?.name; const m = (e.medications || []).map(med => med.name).join(' | '); csv += `"${c}";"${new Date(e.date).toLocaleDateString()}";"${e.diagnosis}";"${e.recoveryDate || '-'}";"${m}";"${(e.notes || '').replace(/"/g, '""')}"\n`; }); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" })); link.download = `kidshealth_export.csv`; link.click(); }
 
         window.onload = () => { renderChildrenTabs(); render(); };
     </script>
