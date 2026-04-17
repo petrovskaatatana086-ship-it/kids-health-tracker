@@ -1,0 +1,321 @@
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>KidsHealth Ultra Pro Max</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#F0F2F5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2864/2864277.png">
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIktpZHMgSGVhbHRoIiwKICAic2hvcnRfbmFtZSI6ICJLaWRzSGVhbHRoIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNGMEYyRjUiLAogICJ0aGVtZV9jb2xvciI6ICIjNjM2NmYxIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9jZG4taWNvbnMtcG5nLmZsaXRpY29uLmNvbS81MTIvMjg2NC8yODY0Mjc3LnBuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIgogICAgfQogIF0KfQ==">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F0F2F5;
+            --glass: rgba(255, 255, 255, 0.8);
+            --stroke: rgba(255, 255, 255, 0.9);
+            --accent: #6366f1;
+            --glow: rgba(99, 102, 241, 0.1);
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg);
+            color: #1A1C2E;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .hybrid-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--stroke);
+            border-radius: 2.5rem;
+            box-shadow: 
+                0 10px 30px -10px rgba(0, 0, 0, 0.05),
+                0 0 15px var(--glow),
+                8px 8px 24px rgba(0, 0, 0, 0.02);
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hybrid-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 2.5rem;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.2) 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        .ios-input { 
+            background: rgba(255, 255, 255, 0.6); 
+            border: 1px solid var(--stroke); 
+            border-radius: 1.25rem; 
+            padding: 12px 16px; 
+            width: 100%; 
+            transition: all 0.2s; 
+            font-size: 0.95rem;
+        }
+        
+        .ios-input:focus { 
+            outline: none; 
+            background: white;
+            box-shadow: 0 0 0 4px var(--glow); 
+            border-color: var(--accent);
+        }
+
+        .tab-btn-active {
+            background: white;
+            box-shadow: 0 0 15px var(--glow), 4px 4px 12px rgba(0,0,0,0.06);
+            color: var(--accent);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .dark-ios-input {
+            background: rgba(0, 0, 0, 0.4) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: #ffffff !important;
+            border-radius: 1.25rem;
+            padding: 14px 18px;
+            width: 100%;
+            font-weight: 700;
+            font-size: 1.25rem;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .formula-text { font-size: 10px; line-height: 1.4; color: rgba(255, 255, 255, 0.5); margin-top: 4px; }
+        .med-row, .visit-row { display: flex; flex-direction: column; gap: 8px; }
+        .item-main { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; }
+        .visit-item-form { display: grid; grid-template-columns: 110px 1fr 40px; gap: 8px; align-items: center; }
+
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .animate-modal { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+    </style>
+</head>
+<body class="pb-40">
+
+    <header class="px-8 pt-10 pb-6 flex justify-between items-center">
+        <div>
+            <h1 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em] mb-1">KidsHealth Tracker</h1>
+            <h2 id="current-child-display" class="text-3xl font-extrabold tracking-tight">Моя семья</h2>
+        </div>
+        <button onclick="showChildModal()" class="w-14 h-14 hybrid-card flex items-center justify-center text-indigo-500">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+        </button>
+    </header>
+
+    <div class="px-6 mb-8 flex gap-4 overflow-x-auto no-scrollbar" id="childTabs"></div>
+
+    <main id="screen-dashboard" class="px-6 space-y-6 max-w-xl mx-auto">
+        <section class="space-y-5" id="health-status-container"></section>
+        <button onclick="openIllnessModal()" class="w-full hybrid-card py-8 text-indigo-600 font-bold flex items-center justify-center gap-4 active:scale-95">
+            <div class="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M12 4v16m8-8H4"/></svg></div>
+            <div class="text-left">
+                <p class="text-lg leading-tight font-extrabold">Новая запись</p>
+                <p class="text-[10px] uppercase font-black opacity-40">Болезнь или осмотр</p>
+            </div>
+        </button>
+    </main>
+
+    <div id="screen-history" class="hidden px-6 pt-4 space-y-6 pb-36 max-w-xl mx-auto animate-modal">
+        <h3 class="text-3xl font-extrabold px-2">История</h3>
+        <div id="history-list" class="space-y-5"></div>
+    </div>
+
+    <div id="screen-vaccine" class="hidden px-6 pt-4 space-y-6 pb-36 max-w-xl mx-auto animate-modal">
+        <div class="flex justify-between items-center px-2">
+            <h3 class="text-3xl font-extrabold">Прививки</h3>
+            <button onclick="openVaccineModal()" class="w-10 h-10 hybrid-card flex items-center justify-center text-emerald-600">+</button>
+        </div>
+        <div id="vaccine-planned-list" class="space-y-3"></div>
+        <div id="vaccine-done-list" class="space-y-3"></div>
+    </div>
+
+    <div id="screen-stats" class="hidden px-6 pt-4 space-y-6 pb-36 max-w-xl mx-auto animate-modal">
+        <h3 class="text-3xl font-extrabold px-2">Аналитика</h3>
+        <div class="grid grid-cols-2 gap-4" id="stats-summary">
+            <div class="bg-[#1A1C2E] p-6 rounded-[2rem] text-white shadow-xl">
+                <p id="total-illnesses" class="text-4xl font-bold mb-2">0</p>
+                <p class="text-[9px] font-black uppercase tracking-widest opacity-60">Всего болезней</p>
+            </div>
+            <div class="bg-indigo-600 p-6 rounded-[2rem] text-white shadow-xl">
+                <p id="total-antibiotics" class="text-4xl font-bold mb-2">0</p>
+                <p class="text-[9px] font-black uppercase tracking-widest opacity-60">Курсов антиб.</p>
+            </div>
+        </div>
+        <div id="stats-diag-list" class="space-y-2 pt-4"></div>
+    </div>
+
+    <div id="screen-tools" class="hidden px-6 pt-4 space-y-8 pb-36 max-w-xl mx-auto animate-modal">
+        <h3 class="text-3xl font-extrabold px-2">Сервис</h3>
+        <div class="hybrid-card p-8 bg-indigo-950 text-white shadow-xl border-indigo-400/20">
+            <div class="flex justify-between items-center mb-6">
+                <p class="font-bold uppercase text-[10px] tracking-widest text-indigo-300">Калькулятор дозировок</p>
+                <span id="calc-child-info" class="text-[10px] font-bold text-white/40">Ручной ввод</span>
+            </div>
+            <div class="mb-8">
+                <p class="text-[9px] font-black uppercase text-indigo-300/60 mb-2 tracking-widest">Вес ребенка (кг)</p>
+                <input type="number" id="calc-weight-input" step="0.1" class="dark-ios-input" placeholder="0.0" oninput="calculateDosageManually()">
+            </div>
+            <div class="space-y-6" id="dosage-calc-result">
+                <div class="flex flex-col border-b border-white/10 pb-4">
+                    <div class="flex justify-between items-center"><span class="text-sm font-semibold">Ибупрофен (Нурофен)</span><span id="res-ibu" class="text-2xl font-black text-indigo-300">0 мл</span></div>
+                    <p class="formula-text">Расчет: Вес / 2. Концентрация: 100мг/5мл.</p>
+                </div>
+                <div class="flex flex-col border-b border-white/10 pb-4">
+                    <div class="flex justify-between items-center"><span class="text-sm font-semibold">Парацетамол (Панадол)</span><span id="res-para" class="text-2xl font-black text-indigo-300">0 мл</span></div>
+                    <p class="formula-text">Расчет: Вес × 0.625. Концентрация: 120мг/5мл.</p>
+                </div>
+            </div>
+        </div>
+        <div class="space-y-4">
+            <button onclick="exportToExcel()" class="w-full hybrid-card p-6 flex items-center gap-5 border-emerald-100/50">
+                <div class="w-12 h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center shadow-lg"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+                <div class="text-left"><p class="font-bold">Выгрузить в Excel</p><p class="text-[10px] uppercase text-gray-400">История (CSV)</p></div>
+            </button>
+        </div>
+    </div>
+
+    <nav class="fixed bottom-0 inset-x-0 bg-white/70 border-t border-white/40 backdrop-blur-2xl px-4 py-5 flex justify-around items-center z-50 pb-10">
+        <button onclick="switchTab('dashboard')" class="nav-icon text-indigo-600 flex flex-col items-center gap-1 transition-all"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span class="text-[8px] font-black uppercase">Старт</span></button>
+        <button onclick="switchTab('history')" class="nav-icon text-gray-300 flex flex-col items-center gap-1 transition-all"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg><span class="text-[8px] font-black uppercase">История</span></button>
+        <button onclick="switchTab('vaccine')" class="nav-icon text-gray-300 flex flex-col items-center gap-1 transition-all"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg><span class="text-[8px] font-black uppercase">Прививки</span></button>
+        <button onclick="switchTab('stats')" class="nav-icon text-gray-300 flex flex-col items-center gap-1 transition-all"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg><span class="text-[8px] font-black uppercase">Статы</span></button>
+        <button onclick="switchTab('tools')" class="nav-icon text-gray-300 flex flex-col items-center gap-1 transition-all"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg><span class="text-[8px] font-black uppercase text-center">Сервис</span></button>
+    </nav>
+
+    <div id="modal-overlay" class="fixed inset-0 bg-black/20 backdrop-blur-md z-[100] hidden flex items-end justify-center">
+        <div id="modal-content" class="bg-white/95 backdrop-blur-3xl w-full max-w-lg rounded-t-[3.5rem] p-10 shadow-2xl animate-modal overflow-y-auto max-h-[95vh] border-t border-white">
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        let db = JSON.parse(localStorage.getItem('kh_v10_final')) || {
+            children: [{ id: 1, name: "Сын", icon: "🚀", weight: "18.5", age: "5" }, { id: 2, name: "Дочь", icon: "🐣", weight: "12.2", age: "3" }],
+            entries: [],
+            vaccinations: []
+        };
+
+        let currentChild = 'all';
+        let activeTab = 'dashboard';
+        let editingId = null;
+
+        const save = () => localStorage.setItem('kh_v10_final', JSON.stringify(db));
+
+        function switchTab(tabId) {
+            document.querySelectorAll('main, [id^="screen-"]').forEach(el => el.classList.add('hidden'));
+            const t = document.getElementById(`screen-${tabId}`); if(t) t.classList.remove('hidden');
+            const icons = document.querySelectorAll('.nav-icon');
+            icons.forEach(i => i.classList.replace('text-indigo-600', 'text-gray-300'));
+            const map = { dashboard: 0, history: 1, vaccine: 2, stats: 3, tools: 4 };
+            if(icons[map[tabId]]) icons[map[tabId]].classList.replace('text-gray-300', 'text-indigo-600');
+            activeTab = tabId; render();
+        }
+
+        function selectChild(id) {
+            currentChild = id;
+            document.getElementById('current-child-display').innerText = id === 'all' ? 'Моя семья' : db.children.find(c => c.id == id).name;
+            renderChildrenTabs(); render();
+        }
+
+        function renderChildrenTabs() {
+            const container = document.getElementById('childTabs'); if(!container) return;
+            let html = `<button onclick="selectChild('all')" class="flex-shrink-0 px-8 py-4 rounded-[1.5rem] font-bold transition-all ${currentChild === 'all' ? 'tab-btn-active' : 'text-gray-400 bg-transparent'}">Все</button>`;
+            db.children.forEach(c => { html += `<button onclick="selectChild(${c.id})" class="flex-shrink-0 px-8 py-4 rounded-[1.5rem] font-bold transition-all flex items-center gap-2 ${currentChild == c.id ? 'tab-btn-active' : 'text-gray-400 bg-transparent'}"><span>${c.icon}</span> ${c.name}</button>`; });
+            container.innerHTML = html;
+        }
+
+        function calculateDosageManually() {
+            const w = parseFloat(document.getElementById('calc-weight-input').value);
+            const ibu = document.getElementById('res-ibu'), para = document.getElementById('res-para');
+            if(!w || w <= 0) { ibu.innerText = "0 мл"; para.innerText = "0 мл"; return; }
+            ibu.innerText = (Math.round(w / 2 * 10) / 10) + " мл";
+            para.innerText = (Math.round(w * 0.625 * 10) / 10) + " мл";
+        }
+
+        function render() {
+            const container = document.getElementById('health-status-container');
+            const list = currentChild === 'all' ? db.children : db.children.filter(c => c.id == currentChild);
+            container.innerHTML = list.map(child => {
+                const ce = db.entries.filter(e => e.childId == child.id);
+                const isHealthy = !ce.length || (ce[ce.length-1].recoveryDate && new Date(ce[ce.length-1].recoveryDate) <= new Date());
+                const nextV = db.vaccinations.filter(v => v.childId == child.id && v.status == 'planned').sort((a,b) => new Date(a.date) - new Date(b.date))[0];
+                const overdue = nextV && new Date(nextV.date) < new Date().setHours(0,0,0,0);
+                return `<div class="hybrid-card p-8 shadow-sm ${isHealthy ? 'bg-emerald-50/40' : 'bg-rose-50/40'}"><div class="flex justify-between mb-6"><div class="flex items-center gap-4"><div class="text-4xl">${child.icon}</div><div><h4 class="text-xl font-bold">${child.name}</h4><p class="text-[10px] font-black uppercase ${isHealthy ? 'text-emerald-500' : 'text-rose-500'}">${isHealthy ? "Здоров(а)" : (ce[ce.length-1].diagnosis || "Болеет")}</p></div></div><button onclick="editChildProfile(${child.id})" class="p-2 text-indigo-400/50 hover:text-indigo-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button></div><div class="grid grid-cols-3 gap-3"><div class="bg-white/50 p-3 rounded-2xl border border-white/60"><p class="text-[8px] font-black text-gray-400 uppercase mb-1">Вес</p><p class="font-bold text-gray-800 text-xs">${child.weight || '--'} кг</p></div><div class="bg-white/50 p-3 rounded-2xl border border-white/60"><p class="text-[8px] font-black text-gray-400 uppercase mb-1">Возраст</p><p class="font-bold text-gray-800 text-xs">${child.age || '--'} л</p></div><div class="p-3 rounded-2xl border border-white/60 ${overdue ? 'bg-rose-100 border-rose-200' : 'bg-white/50'}"><p class="text-[8px] font-black uppercase mb-1 ${overdue ? 'text-rose-600' : 'text-gray-400'}">${overdue ? '⚠️ Срок' : 'Прививка'}</p><p class="font-bold text-[9px] truncate">${nextV ? nextV.name : 'Нет'}</p></div></div></div>`;
+            }).join('');
+
+            if(activeTab === 'history') {
+                const h = currentChild === 'all' ? db.entries : db.entries.filter(e => e.childId == currentChild);
+                document.getElementById('history-list').innerHTML = h.slice().reverse().map(e => {
+                    const c = db.children.find(child => child.id == e.childId);
+                    return `<div class="hybrid-card p-7 flex gap-5 border-l-8 border-indigo-200"><div class="text-3xl">${c?.icon || '👶'}</div><div class="flex-1"><div class="flex justify-between mb-3"><div><h4 class="font-bold text-lg leading-tight">${e.diagnosis}</h4><p class="text-[10px] font-bold text-gray-400">${new Date(e.date).toLocaleDateString()}</p></div><div class="flex gap-1"><button onclick="openIllnessModal(${e.id})" class="p-2 text-indigo-400">✏️</button><button onclick="deleteEntry(${e.id})" class="p-2 text-rose-300">✕</button></div></div><div class="flex flex-wrap gap-2 mb-3">${e.recoveryDate ? `<span class="px-2 py-1 bg-emerald-50 text-emerald-600 text-[9px] font-black rounded-xl border border-emerald-100 uppercase">✨ Вызд: ${new Date(e.recoveryDate).toLocaleDateString()}</span>` : ''}</div><div class="flex flex-wrap gap-2">${(e.medications || []).map(m => `<span class="px-2 py-1 bg-indigo-50 text-indigo-600 text-[9px] font-black rounded-lg">${m.name}${m.isAntibiotic ? ' (💊 А)' : ''}</span>`).join('')}</div></div></div>`;
+                }).join('');
+            }
+
+            if(activeTab === 'stats') {
+                const f = currentChild === 'all' ? db.entries : db.entries.filter(e => e.childId == currentChild);
+                document.getElementById('total-illnesses').innerText = f.length;
+                let a = 0; f.forEach(e => (e.medications || []).forEach(m => m.isAntibiotic && a++));
+                document.getElementById('total-antibiotics').innerText = a;
+                document.getElementById('stats-diag-list').innerHTML = f.slice().reverse().map(e => `<div class="bg-white/50 p-4 rounded-2xl border border-white/60 flex justify-between items-center mb-2"><div><p class="font-bold text-sm">${e.diagnosis}</p><p class="text-[9px] uppercase font-black text-gray-400">${db.children.find(c => c.id == e.childId)?.name || '?'}</p></div><p class="text-[10px] font-bold text-gray-500">${new Date(e.date).toLocaleDateString()}</p></div>`).join('') || '<p class="text-center text-gray-300 py-6 text-xs italic">Записей нет</p>';
+            }
+
+            if(activeTab === 'vaccine') {
+                const list = currentChild === 'all' ? db.vaccinations : db.vaccinations.filter(v => v.childId == currentChild);
+                const tpl = (v) => `<div class="hybrid-card p-5 flex justify-between items-center mb-2"><div class="flex items-center gap-4"><div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-lg">${v.status == 'done' ? '✅' : '📅'}</div><div><p class="font-bold text-sm">${v.name}</p><p class="text-[9px] font-black text-gray-400 uppercase">${db.children.find(c => c.id == v.childId)?.name || ''} • ${new Date(v.date).toLocaleDateString()}</p></div></div><button onclick="deleteVaccine(${v.id})" class="text-rose-300 p-2">✕</button></div>`;
+                document.getElementById('vaccine-planned-list').innerHTML = list.filter(v => v.status === 'planned').map(tpl).join('') || '<p class="text-center text-gray-300 py-4 italic text-xs">Нет планов</p>';
+                document.getElementById('vaccine-done-list').innerHTML = list.filter(v => v.status === 'done').map(tpl).join('') || '<p class="text-center text-gray-300 py-4 italic text-xs">История пуста</p>';
+            }
+            if(activeTab === 'tools') {
+                document.getElementById('calc-child-info').innerText = currentChild === 'all' ? "Ручной ввод" : `Ребенок: ${db.children.find(c => c.id == currentChild)?.name}`;
+                calculateDosageManually();
+            }
+        }
+
+        function exportToExcel() {
+            let csv = "\uFEFFРебенок;Дата;Диагноз;Выздоровление;Лекарства\n";
+            db.entries.forEach(e => {
+                const c = db.children.find(ch => ch.id == e.childId)?.name;
+                const m = (e.medications || []).map(med => med.name).join(' | ');
+                csv += `"${c}";"${new Date(e.date).toLocaleDateString()}";"${e.diagnosis}";"${e.recoveryDate || '-'}";"${m}"\n`;
+            });
+            const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" })); link.download = `kidshealth_export.csv`; link.click();
+        }
+
+        function openModal(c) { document.getElementById('modal-body').innerHTML = c; document.getElementById('modal-overlay').classList.remove('hidden'); }
+        function closeModal() { document.getElementById('modal-overlay').classList.add('hidden'); editingId = null; }
+        function editChildProfile(id) { const child = db.children.find(c => c.id == id); openModal(`<h3 class="text-3xl font-extrabold mb-8">Профиль</h3><div class="space-y-6"><input type="text" id="e-name" value="${child.name}" class="ios-input font-bold"><input type="number" id="e-age" value="${child.age || ''}" class="ios-input font-bold" placeholder="Возраст"><input type="number" id="e-weight" step="0.1" value="${child.weight || ''}" class="ios-input font-bold" placeholder="Вес (кг)"><div class="flex gap-4 pt-6"><button onclick="closeModal()" class="flex-1 py-5 font-bold text-gray-400">Отмена</button><button onclick="updateChild(${child.id})" class="flex-[2] bg-indigo-600 text-white py-5 rounded-[1.5rem] font-bold shadow-xl">Сохранить</button></div></div>`); }
+        function updateChild(id) { const c = db.children.find(child => child.id == id); c.name = document.getElementById('e-name').value; c.weight = document.getElementById('e-weight').value; c.age = document.getElementById('e-age').value; save(); closeModal(); render(); }
+        function showChildModal() { openModal(`<h3 class="text-3xl font-extrabold mb-8 text-center">Новый профиль</h3><div class="space-y-6"><div class="flex justify-center gap-5 mb-6" id="icon-picker" data-icon="🚀"><button onclick="document.getElementById('icon-picker').dataset.icon='🚀'" class="w-16 h-16 hybrid-card text-2xl flex items-center justify-center">🚀</button><button onclick="document.getElementById('icon-picker').dataset.icon='🚂'" class="w-16 h-16 hybrid-card text-2xl flex items-center justify-center">🚂</button><button onclick="document.getElementById('icon-picker').dataset.icon='🐣'" class="w-16 h-16 hybrid-card text-2xl flex items-center justify-center">🐣</button></div><input type="text" id="c-name" placeholder="Имя" class="ios-input text-center text-lg font-bold shadow-sm"><input type="number" id="c-age" placeholder="Возраст" class="ios-input text-center"><div class="flex gap-4 pt-4"><button onclick="closeModal()" class="flex-1 py-5 font-bold text-gray-400">Отмена</button><button onclick="saveChild()" class="flex-[2] bg-indigo-600 text-white py-5 rounded-[1.5rem] font-bold shadow-xl">Создать</button></div></div>`); }
+        function saveChild() { const n = document.getElementById('c-name').value; if(n) { db.children.push({ id: Date.now(), name: n, icon: document.getElementById('icon-picker').dataset.icon, weight: "", age: document.getElementById('c-age').value }); save(); closeModal(); renderChildrenTabs(); render(); } }
+        function openIllnessModal(id = null) {
+            editingId = id; let data = id ? db.entries.find(e => e.id === id) : null; const options = db.children.map(c => `<option value="${c.id}" ${data?.childId == c.id ? 'selected' : ''}>${c.name}</option>`).join('');
+            openModal(`<h3 class="text-3xl font-extrabold mb-8 tracking-tight">${id ? 'Правка' : 'Новая запись'}</h3><div class="space-y-6"><div class="grid grid-cols-2 gap-4"><select id="f-child" class="ios-input font-bold">${options}</select><input type="date" id="f-date" class="ios-input" value="${data?.date || new Date().toISOString().split('T')[0]}"></div><div class="grid grid-cols-2 gap-4"><input type="text" id="f-diagnosis" placeholder="Диагноз" class="ios-input font-bold" value="${data?.diagnosis || ''}"><input type="date" id="f-recovery" class="ios-input" value="${data?.recoveryDate || ''}"></div><div class="hybrid-card p-5 bg-indigo-50/30"><div class="flex justify-between mb-3 px-1"><p class="text-[9px] font-black text-indigo-400 uppercase">Врачи</p><button onclick="addVisitRow()" class="text-indigo-600 text-[10px] font-black uppercase">+ Добавить</button></div><div id="visit-list-form"></div></div><div class="space-y-3"><p class="text-[11px] font-black uppercase text-indigo-500 px-1">Лекарства</p><div id="med-list-form"></div><button onclick="addMedRow()" class="w-full py-3 rounded-xl border-2 border-dashed border-gray-200 text-gray-400 text-xs font-bold">+ Добавить</button></div><div class="flex gap-4 pt-6"><button onclick="closeModal()" class="flex-1 py-5 font-bold text-gray-400">Отмена</button><button onclick="saveEntry()" class="flex-[2] bg-indigo-600 text-white py-5 rounded-[1.5rem] font-bold shadow-xl">Сохранить</button></div></div>`);
+            if (data) { (data.visits || []).forEach(v => addVisitRow(v.date, v.doctorName)); (data.medications || []).forEach(m => addMedRow(m.name, m.isAntibiotic, m.startDate, m.endDate)); } else { addMedRow(); }
+        }
+        function addVisitRow(d="", n="") { const container = document.getElementById('visit-list-form'); if(!container) return; const div = document.createElement('div'); div.className = 'visit-item-form mb-2'; div.innerHTML = `<input type="date" class="ios-input py-2 text-xs font-bold visit-date" value="${d}"><input type="text" placeholder="ФИО врача" class="ios-input py-2 text-xs visit-doctor" value="${n}"><button onclick="this.parentElement.remove()" class="text-rose-300 p-1">✕</button>`; container.appendChild(div); }
+        function addMedRow(n="", a=false, s="", e="") { const container = document.getElementById('med-list-form'); if(!container) return; const div = document.createElement('div'); div.className = 'med-row bg-white/40 p-4 rounded-3xl border border-white/50 mb-3'; div.innerHTML = `<div class="item-main"><input type="text" placeholder="Лекарство" class="ios-input py-2 text-sm med-name" value="${n}"><label class="flex items-center gap-1"><input type="checkbox" class="w-6 h-6 accent-rose-500 med-anti" ${a ? 'checked' : ''} onchange="this.parentElement.parentElement.nextElementSibling.classList.toggle('hidden', !this.checked)"><span class="text-[9px] font-black uppercase text-gray-400">Анти</span></label><button onclick="this.parentElement.parentElement.remove()" class="text-gray-300 p-1">✕</button></div><div class="med-dates ${a ? '' : 'hidden'} grid grid-cols-2 gap-2 mt-2"><input type="date" class="ios-input py-2 text-xs med-start" value="${s}"><input type="date" class="ios-input py-2 text-xs med-end" value="${e}"></div>`; container.appendChild(div); }
+        function saveEntry() { const meds = []; document.querySelectorAll('#med-list-form .med-row').forEach(row => { const n = row.querySelector('.med-name')?.value; if(n) meds.push({ name: n, isAntibiotic: row.querySelector('.med-anti').checked, startDate: row.querySelector('.med-start').value, endDate: row.querySelector('.med-end').value }); }); const visits = []; document.querySelectorAll('.visit-item-form').forEach(row => { const d = row.querySelector('.visit-date').value, n = row.querySelector('.visit-doctor').value; if(d) visits.push({ date: d, doctorName: n }); }); const cId = document.getElementById('f-child').value; const ent = { id: editingId || Date.now(), childId: cId, date: document.getElementById('f-date').value, diagnosis: document.getElementById('f-diagnosis').value, recoveryDate: document.getElementById('f-recovery').value, visits, medications: meds }; if (editingId) db.entries[db.entries.findIndex(e => e.id === editingId)] = ent; else db.entries.push(ent); save(); closeModal(); render(); }
+        function openVaccineModal() { openModal(`<h3 class="text-3xl font-extrabold mb-8">Прививка</h3><div class="space-y-6"><select id="v-child" class="ios-input font-bold">${db.children.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select><input type="text" id="v-name" placeholder="Название" class="ios-input font-bold"><div class="grid grid-cols-2 gap-4"><input type="date" id="v-date" class="ios-input"><select id="v-status" class="ios-input font-bold"><option value="planned">Запланирована</option><option value="done">Сделана</option></select></div><div class="flex gap-4 pt-6"><button onclick="closeModal()" class="flex-1 py-5 font-bold text-gray-400">Отмена</button><button onclick="saveVaccine()" class="flex-[2] bg-emerald-500 text-white py-5 rounded-[1.5rem] font-bold shadow-xl">Сохранить</button></div></div>`); }
+        function saveVaccine() { const cs = document.getElementById('v-child'); const v = { id: Date.now(), childId: cs.value, name: document.getElementById('v-name').value, date: document.getElementById('v-date').value, status: document.getElementById('v-status').value }; if(v.name && v.date) { db.vaccinations.push(v); save(); closeModal(); render(); } }
+        function deleteEntry(id) { if(confirm('Удалить?')) { db.entries = db.entries.filter(e => e.id !== id); save(); render(); } }
+        function deleteVaccine(id) { if(confirm('Удалить?')) { db.vaccinations = db.vaccinations.filter(v => v.id !== id); save(); render(); } }
+        function exportJSON() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(db, null, 2)], {type: 'application/json'})); a.download = `kidshealth_backup.json`; a.click(); }
+
+        window.onload = () => { renderChildrenTabs(); render(); };
+    </script>
+</body>
+</html>
