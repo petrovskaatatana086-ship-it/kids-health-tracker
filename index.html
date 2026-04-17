@@ -141,25 +141,26 @@
         /* Индикатор офлайн режима */
         #offline-indicator {
             position: fixed;
-            top: env(safe-area-inset-top, 20px);
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255, 59, 48, 0.9);
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #ef4444;
             color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
+            padding: 8px;
+            text-align: center;
             font-size: 10px;
             font-weight: 800;
             text-transform: uppercase;
-            z-index: 9999;
+            letter-spacing: 0.1em;
+            z-index: 10000;
             display: none;
-            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
         }
     </style>
 </head>
 <body class="pb-40">
 
-    <div id="offline-indicator">Офлайн режим</div>
+    <div id="offline-indicator">Режим без интернета • Данные сохраняются локально</div>
 
     <header class="px-8 pt-10 pb-6 flex justify-between items-center">
         <div>
@@ -308,7 +309,7 @@
             container.innerHTML = html;
         }
 
-        // --- Расчеты ---
+        // --- Логика рендеринга и расчеты ---
         function calculateDosageManually() {
             const input = document.getElementById('calc-weight-input'); if(!input) return;
             const w = parseFloat(input.value);
@@ -318,7 +319,6 @@
             if(para) para.innerText = (Math.round(w * 0.625 * 10) / 10) + " мл";
         }
 
-        // --- Рендеринг ---
         function render() {
             const container = document.getElementById('health-status-container');
             const list = currentChild === 'all' ? db.children : db.children.filter(c => c.id == currentChild);
@@ -328,17 +328,11 @@
                 const last = ce.length > 0 ? ce[ce.length-1] : null;
                 const today = new Date().setHours(0,0,0,0);
                 
-                // ЛОГИКА СТАТУСА: Ребенок здоров, если дата выздоровления заполнена
                 const isHealthy = !last || (last.recoveryDate && last.recoveryDate.trim() !== "");
-                
-                // Определение пола по иконке для правильного окончания
-                const genderSuffix = (child.icon === '👧' || child.icon === '👶') ? 'а' : '';
-                const healthyText = `Здоров${genderSuffix}`;
-
-                const statusLabel = isHealthy ? healthyText : (last.diagnosis || "Болеет");
+                const genderSuffix = (child.icon === '👧' || child.icon === '🐣') ? 'а' : '';
+                const statusLabel = isHealthy ? `Здоров${genderSuffix}` : (last.diagnosis || "Болеет");
                 const badgeColor = isHealthy ? "bg-emerald-500/20 text-emerald-600" : "bg-rose-500/20 text-rose-600";
                 const bgColor = isHealthy ? "bg-emerald-50/40" : "bg-rose-50/40";
-
                 const nextV = db.vaccinations.filter(v => v.childId == child.id && v.status == 'planned').sort((a,b) => new Date(a.date) - new Date(b.date))[0];
 
                 return `
@@ -355,7 +349,6 @@
                             </div>
                             <button onclick="editChildProfile(${child.id})" class="p-2 text-indigo-400/50 hover:text-indigo-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>
                         </div>
-                        
                         <div class="grid grid-cols-2 gap-3 mb-4">
                             <div class="bg-white/50 p-4 rounded-2xl border border-white/60">
                                 <p class="text-[9px] font-black text-gray-400 uppercase mb-1">Вес и Возраст</p>
@@ -366,7 +359,6 @@
                                 <p class="font-bold text-emerald-600 text-sm">${(last && last.recoveryDate) ? new Date(last.recoveryDate).toLocaleDateString() : '--'}</p>
                             </div>
                         </div>
-
                         <div class="bg-white/30 p-3 rounded-2xl border border-white/40 flex items-center justify-between">
                              <p class="text-[9px] font-black uppercase text-gray-400">След. прививка:</p>
                              <p class="text-[9px] font-bold text-gray-600">${nextV ? nextV.name + ' (' + new Date(nextV.date).toLocaleDateString() + ')' : 'Нет данных'}</p>
@@ -374,93 +366,74 @@
                     </div>`;
             }).join('');
 
-            if(activeTab === 'history') {
-                const h = currentChild === 'all' ? db.entries : db.entries.filter(e => e.childId == currentChild);
-                document.getElementById('history-list').innerHTML = h.slice().reverse().map(e => {
-                    const c = db.children.find(child => child.id == e.childId);
-                    const visitsHtml = (e.visits || []).map(v => `<div class="px-2 py-1 bg-amber-50 text-amber-700 text-[8px] font-black rounded border border-amber-100 mb-1">👨‍⚕️ ${new Date(v.date).toLocaleDateString()} - ${v.doctorName || 'Врач'}</div>`).join('');
-                    
-                    const medsHtml = (e.medications || []).map(m => `
-                        <div class="p-3 bg-indigo-50/50 rounded-2xl border border-indigo-100 mb-2">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-xs font-bold text-indigo-700">${m.name}${m.isAntibiotic ? ' (💊 А)' : ''}</span>
-                                <span class="text-[9px] font-black text-indigo-400 uppercase">${m.timesPerDay ? m.timesPerDay + ' р/д' : ''} • ${m.totalDays ? m.totalDays + ' дн' : ''}</span>
-                            </div>
-                            ${m.isAntibiotic ? `<div class="text-[8px] opacity-60 font-bold uppercase mt-1">Курс: ${m.startDate || '?'} — ${m.endDate || '?'}</div>` : ''}
+            if(activeTab === 'history') renderHistory();
+            if(activeTab === 'stats') renderStats();
+            if(activeTab === 'vaccine') renderVaccine();
+            if(activeTab === 'tools') renderTools();
+        }
+
+        function renderHistory() {
+            const h = currentChild === 'all' ? db.entries : db.entries.filter(e => e.childId == currentChild);
+            document.getElementById('history-list').innerHTML = h.slice().reverse().map(e => {
+                const c = db.children.find(child => child.id == e.childId);
+                const visitsHtml = (e.visits || []).map(v => `<div class="px-2 py-1 bg-amber-50 text-amber-700 text-[8px] font-black rounded border border-amber-100 mb-1">👨‍⚕️ ${new Date(v.date).toLocaleDateString()} - ${v.doctorName || 'Врач'}</div>`).join('');
+                const medsHtml = (e.medications || []).map(m => `
+                    <div class="p-3 bg-indigo-50/50 rounded-2xl border border-indigo-100 mb-2">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-bold text-indigo-700">${m.name}${m.isAntibiotic ? ' (💊 А)' : ''}</span>
+                            <span class="text-[9px] font-black text-indigo-400 uppercase">${m.timesPerDay ? m.timesPerDay + ' р/д' : ''} • ${m.totalDays ? m.totalDays + ' дн' : ''}</span>
                         </div>
-                    `).join('');
-
-                    return `
-                        <div class="hybrid-card p-7 flex gap-5 border-l-8 border-indigo-200">
-                            <div class="text-3xl">${c?.icon || '👶'}</div>
-                            <div class="flex-1">
-                                <div class="flex justify-between mb-3">
-                                    <div><h4 class="font-bold text-lg leading-tight">${e.diagnosis}</h4><p class="text-[10px] font-bold text-gray-400">${new Date(e.date).toLocaleDateString()}</p></div>
-                                    <div class="flex gap-1"><button onclick="openIllnessModal(${e.id})" class="p-2 text-indigo-400">✏️</button><button onclick="deleteEntry(${e.id})" class="p-2 text-rose-300">✕</button></div>
-                                </div>
-                                <div class="flex flex-wrap gap-2 mb-3">${e.recoveryDate ? `<span class="px-2 py-1 bg-emerald-50 text-emerald-600 text-[9px] font-black rounded-xl border border-emerald-100 uppercase">✨ Вылечен: ${new Date(e.recoveryDate).toLocaleDateString()}</span>` : ''}</div>
-                                <div class="mb-3">${visitsHtml}</div>
-                                <div class="text-xs text-gray-500 italic mb-3">${e.notes || ''}</div>
-                                <div class="space-y-1">${medsHtml}</div>
+                    </div>`).join('');
+                return `
+                    <div class="hybrid-card p-7 flex gap-5 border-l-8 border-indigo-200">
+                        <div class="text-3xl">${c?.icon || '👶'}</div>
+                        <div class="flex-1">
+                            <div class="flex justify-between mb-3">
+                                <div><h4 class="font-bold text-lg leading-tight">${e.diagnosis}</h4><p class="text-[10px] font-bold text-gray-400">${new Date(e.date).toLocaleDateString()}</p></div>
+                                <div class="flex gap-1"><button onclick="openIllnessModal(${e.id})" class="p-2 text-indigo-400">✏️</button><button onclick="deleteEntry(${e.id})" class="p-2 text-rose-300">✕</button></div>
                             </div>
-                        </div>`;
-                }).join('');
-            }
+                            <div class="flex flex-wrap gap-2 mb-3">${e.recoveryDate ? `<span class="px-2 py-1 bg-emerald-50 text-emerald-600 text-[9px] font-black rounded-xl border border-emerald-100 uppercase">✨ Вылечен: ${new Date(e.recoveryDate).toLocaleDateString()}</span>` : ''}</div>
+                            <div class="mb-3">${visitsHtml}</div>
+                            <div class="text-xs text-gray-500 italic mb-3">${e.notes || ''}</div>
+                            <div class="space-y-1">${medsHtml}</div>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
 
-            if(activeTab === 'stats') {
-                const f = currentChild === 'all' ? db.entries : db.entries.filter(e => e.childId == currentChild);
-                document.getElementById('total-illnesses').innerText = f.length;
-                let aCount = 0, aDetails = [];
-                f.forEach(e => {
-                    const child = db.children.find(c => c.id == e.childId);
-                    (e.medications || []).forEach(m => {
-                        if(m.isAntibiotic) { aCount++; aDetails.push({ name: m.name, date: e.date, start: m.startDate, end: m.endDate, child: child?.name }); }
-                    });
+        function renderStats() {
+            const f = currentChild === 'all' ? db.entries : db.entries.filter(e => e.childId == currentChild);
+            document.getElementById('total-illnesses').innerText = f.length;
+            let aCount = 0, aDetails = [];
+            f.forEach(e => {
+                const child = db.children.find(c => c.id == e.childId);
+                (e.medications || []).forEach(m => {
+                    if(m.isAntibiotic) { aCount++; aDetails.push({ name: m.name, date: e.date, start: m.startDate, end: m.endDate, child: child?.name }); }
                 });
-                document.getElementById('total-antibiotics').innerText = aCount;
-                document.getElementById('stats-anti-detail-list').innerHTML = aDetails.reverse().map(a => `<div class="bg-rose-50/40 p-4 rounded-2xl border border-rose-100/50 flex justify-between items-start"><div><p class="font-bold text-sm text-rose-600">${a.name}</p><p class="text-[9px] font-black text-gray-400 uppercase mt-0.5">${a.child}</p></div><div class="text-right text-[10px] font-bold text-rose-400 leading-tight">Период:<br>${a.start || '...'} - ${a.end || '...'}</div></div>`).join('') || '<p class="text-center text-gray-300 py-2 text-xs italic">Нет данных</p>';
-                document.getElementById('stats-diag-list').innerHTML = f.slice().reverse().map(e => `<div class="bg-white/50 p-4 rounded-2xl border border-white/60 flex justify-between items-center mb-2"><div><p class="font-bold text-sm">${e.diagnosis}</p><p class="text-[9px] uppercase font-black text-gray-400">${db.children.find(c => c.id == e.childId)?.name || '?'}</p></div><p class="text-[10px] font-bold text-gray-500">${new Date(e.date).toLocaleDateString()}</p></div>`).join('') || '<p class="text-center text-gray-300 py-6 text-xs italic">Записей нет</p>';
-            }
+            });
+            document.getElementById('total-antibiotics').innerText = aCount;
+            document.getElementById('stats-anti-detail-list').innerHTML = aDetails.reverse().map(a => `<div class="bg-rose-50/40 p-4 rounded-2xl border border-rose-100/50 flex justify-between items-start"><div><p class="font-bold text-sm text-rose-600">${a.name}</p><p class="text-[9px] font-black text-gray-400 uppercase mt-0.5">${a.child}</p></div><div class="text-right text-[10px] font-bold text-rose-400 leading-tight">Период:<br>${a.start || '...'} - ${a.end || '...'}</div></div>`).join('') || '<p class="text-center text-gray-300 py-2 text-xs italic">Нет данных</p>';
+            document.getElementById('stats-diag-list').innerHTML = f.slice().reverse().map(e => `<div class="bg-white/50 p-4 rounded-2xl border border-white/60 flex justify-between items-center mb-2"><div><p class="font-bold text-sm">${e.diagnosis}</p><p class="text-[9px] uppercase font-black text-gray-400">${db.children.find(c => c.id == e.childId)?.name || '?'}</p></div><p class="text-[10px] font-bold text-gray-500">${new Date(e.date).toLocaleDateString()}</p></div>`).join('') || '<p class="text-center text-gray-300 py-6 text-xs italic">Записей нет</p>';
+        }
 
-            if(activeTab === 'vaccine') {
-                const list = currentChild === 'all' ? db.vaccinations : db.vaccinations.filter(v => v.childId == currentChild);
-                const tpl = (v) => `<div class="hybrid-card p-5 flex justify-between items-center mb-2"><div class="flex items-center gap-4"><div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-lg">${v.status == 'done' ? '✅' : '📅'}</div><div><p class="font-bold text-sm">${v.name}</p><p class="text-[9px] font-black text-gray-400 uppercase">${db.children.find(c => c.id == v.childId)?.name || ''} • ${new Date(v.date).toLocaleDateString()}</p></div></div><button onclick="deleteVaccine(${v.id})" class="text-rose-300 p-2">✕</button></div>`;
-                document.getElementById('vaccine-planned-list').innerHTML = list.filter(v => v.status === 'planned').map(tpl).join('') || '<p class="text-center text-gray-300 py-4 italic text-xs">Нет планов</p>';
-                document.getElementById('vaccine-done-list').innerHTML = list.filter(v => v.status === 'done').map(tpl).join('') || '<p class="text-center text-gray-300 py-4 italic text-xs">История пуста</p>';
-            }
-            if(activeTab === 'tools') {
-                const info = document.getElementById('calc-child-info');
-                if(info) info.innerText = "Ручной ввод";
-                calculateDosageManually();
-            }
+        function renderVaccine() {
+            const list = currentChild === 'all' ? db.vaccinations : db.vaccinations.filter(v => v.childId == currentChild);
+            const tpl = (v) => `<div class="hybrid-card p-5 flex justify-between items-center mb-2"><div class="flex items-center gap-4"><div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-lg">${v.status == 'done' ? '✅' : '📅'}</div><div><p class="font-bold text-sm">${v.name}</p><p class="text-[9px] font-black text-gray-400 uppercase">${db.children.find(c => c.id == v.childId)?.name || ''} • ${new Date(v.date).toLocaleDateString()}</p></div></div><button onclick="deleteVaccine(${v.id})" class="text-rose-300 p-2">✕</button></div>`;
+            document.getElementById('vaccine-planned-list').innerHTML = list.filter(v => v.status === 'planned').map(tpl).join('') || '<p class="text-center text-gray-300 py-4 italic text-xs">Нет планов</p>';
+            document.getElementById('vaccine-done-list').innerHTML = list.filter(v => v.status === 'done').map(tpl).join('') || '<p class="text-center text-gray-300 py-4 italic text-xs">История пуста</p>';
+        }
+
+        function renderTools() {
+            document.getElementById('calc-child-info').innerText = "Ручной ввод";
+            calculateDosageManually();
         }
 
         // --- Управление Модальными Окнами ---
         function openModal(content) { document.getElementById('modal-body').innerHTML = content; document.getElementById('modal-overlay').classList.remove('hidden'); }
         function closeModal() { document.getElementById('modal-overlay').classList.add('hidden'); editingId = null; }
 
-        function editChildProfile(id) { 
-            const child = db.children.find(c => c.id == id); 
-            openModal(`<h3 class="text-3xl font-extrabold mb-8">Профиль</h3><div class="space-y-6"><input type="text" id="e-name" value="${child.name}" class="ios-input font-bold"><input type="number" id="e-age" value="${child.age || ''}" class="ios-input font-bold" placeholder="Возраст"><input type="number" id="e-weight" step="0.1" value="${child.weight || ''}" class="ios-input font-bold" placeholder="Вес (кг)"><div class="flex gap-4 pt-6"><button onclick="closeModal()" class="flex-1 py-5 font-bold text-gray-400">Отмена</button><button onclick="updateChild(${child.id})" class="flex-[2] bg-indigo-600 text-white py-5 rounded-[1.5rem] font-bold shadow-xl">Сохранить</button></div></div>`); 
-        }
-        function updateChild(id) { 
-            const c = db.children.find(child => child.id == id); 
-            c.name = document.getElementById('e-name').value; 
-            c.weight = document.getElementById('e-weight').value; 
-            c.age = document.getElementById('e-age').value; 
-            save(); closeModal(); render(); 
-        }
-        function showChildModal() { 
-            openModal(`<h3 class="text-3xl font-extrabold mb-8 text-center">Новый профиль</h3><div class="space-y-6"><div class="flex justify-center gap-5 mb-6" id="icon-picker" data-icon="👶"><button onclick="document.getElementById('icon-picker').dataset.icon='👦'" class="w-16 h-16 hybrid-card text-2xl flex items-center justify-center">👦</button><button onclick="document.getElementById('icon-picker').dataset.icon='👧'" class="w-16 h-16 hybrid-card text-2xl flex items-center justify-center">👧</button><button onclick="document.getElementById('icon-picker').dataset.icon='👶'" class="w-16 h-16 hybrid-card text-2xl flex items-center justify-center">👶</button></div><input type="text" id="c-name" placeholder="Имя" class="ios-input text-center text-lg font-bold shadow-sm"><input type="number" id="c-age" placeholder="Возраст" class="ios-input text-center"><div class="flex gap-4 pt-4"><button onclick="closeModal()" class="flex-1 py-5 font-bold text-gray-400">Отмена</button><button onclick="saveChild()" class="flex-[2] bg-indigo-600 text-white py-5 rounded-[1.5rem] font-bold shadow-xl">Создать</button></div></div>`); 
-        }
-        function saveChild() { 
-            const n = document.getElementById('c-name').value; 
-            if(n) { db.children.push({ id: Date.now(), name: n, icon: document.getElementById('icon-picker').dataset.icon, weight: "", age: document.getElementById('c-age').value }); save(); closeModal(); renderChildrenTabs(); render(); } 
-        }
-
         function openIllnessModal(id = null) {
-            editingId = id; 
-            let data = id ? db.entries.find(e => e.id === id) : null; 
+            editingId = id; let data = id ? db.entries.find(e => e.id === id) : null; 
             const options = db.children.map(c => `<option value="${c.id}" ${data?.childId == c.id ? 'selected' : ''}>${c.name}</option>`).join('');
             openModal(`
                 <h3 class="text-3xl font-extrabold mb-8 tracking-tight">${id ? 'Редактировать' : 'Новая запись'}</h3>
@@ -474,158 +447,72 @@
                         <input type="date" id="f-recovery" class="ios-input" value="${data?.recoveryDate || ''}">
                     </div>
                     <div class="hybrid-card p-5 bg-indigo-50/30">
-                        <div class="flex justify-between items-center mb-3 px-1"><p class="text-[9px] font-black uppercase text-indigo-400 tracking-widest">Вызовы врача</p><button onclick="addVisitRow()" class="text-indigo-600 text-[10px] font-black uppercase tracking-widest">+ Добавить</button></div>
+                        <div class="flex justify-between items-center mb-3 px-1"><p class="text-[9px] font-black uppercase text-indigo-400">Врачи</p><button onclick="addVisitRow()" class="text-indigo-600 text-[10px] font-black uppercase">+ Добавить</button></div>
                         <div id="visit-list-form"></div>
                     </div>
-
-                    <!-- ТЕМПЕРАТУРА -->
                     <div class="space-y-4">
-                        <p class="text-[11px] font-black uppercase text-indigo-500 tracking-[0.2em] mb-3 ml-1">Температура (°C)</p>
+                        <p class="text-[11px] font-black uppercase text-indigo-500 ml-1">Температура (°C)</p>
                         ${[1,2,3].map(d => `
                             <div class="temp-grid">
                                 <span class="text-xs font-bold text-gray-400 uppercase">День ${d}:</span>
-                                <div class="flex gap-2 items-center">
-                                    <input type="number" id="f-t${d}-from" step="0.1" value="${data && data.temps ? data.temps[d].from : '36.6'}" class="ios-input text-center text-xs">
-                                    <input type="number" id="f-t${d}-to" step="0.1" value="${data && data.temps ? data.temps[d].to : '36.6'}" class="ios-input text-center text-xs">
-                                </div>
-                            </div>
-                        `).join('')}
+                                <div class="flex gap-2"><input type="number" id="f-t${d}-from" step="0.1" value="${data?.temps?.[d]?.from || '36.6'}" class="ios-input text-center text-xs"><input type="number" id="f-t${d}-to" step="0.1" value="${data?.temps?.[d]?.to || '36.6'}" class="ios-input text-center text-xs"></div>
+                            </div>`).join('')}
                     </div>
-
-                    <div class="hybrid-card p-5 bg-white/30">
-                        <div class="flex items-center justify-between">
-                            <label class="flex items-center gap-3 cursor-pointer">
-                                <input type="checkbox" id="f-more3" ${data && data.hasLongFever ? 'checked' : ''} onchange="document.getElementById('f-days-box').classList.toggle('hidden')" class="w-6 h-6 accent-indigo-600 rounded-lg">
-                                <span class="text-xs font-bold text-gray-600 uppercase tracking-widest">Более 3 дней?</span>
-                            </label>
-                            <div id="f-days-box" class="${data && data.hasLongFever ? '' : 'hidden'}">
-                                <input type="number" id="f-days" placeholder="Дни" class="ios-input w-20 text-center font-bold" value="${data ? data.feverDays : ''}">
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="space-y-3">
                         <p class="text-[11px] font-black uppercase text-indigo-500 px-1">Лекарства и схема</p>
                         <div id="med-list-form"></div>
                         <button onclick="addMedRow()" class="w-full py-3 rounded-xl border-2 border-dashed border-gray-200 text-gray-400 text-xs font-bold">+ Добавить</button>
                     </div>
-                    <textarea id="f-notes" placeholder="Особенности лечения / Заметки..." class="ios-input h-32">${data?.notes || ''}</textarea>
+                    <textarea id="f-notes" placeholder="Заметки..." class="ios-input h-32">${data?.notes || ''}</textarea>
                     <div class="flex gap-4 pt-6"><button onclick="closeModal()" class="flex-1 py-5 font-bold text-gray-400">Отмена</button><button onclick="saveEntry()" class="flex-[2] bg-indigo-600 text-white py-5 rounded-[1.5rem] font-bold shadow-xl">Сохранить</button></div>
                 </div>
             `);
-            if (data) { 
-                (data.visits || []).forEach(v => addVisitRow(v.date, v.doctorName)); 
-                (data.medications || []).forEach(m => addMedRow(m.name, m.isAntibiotic, m.startDate, m.endDate, m.timesPerDay, m.totalDays)); 
-            } else { addMedRow(); }
+            if (data) { (data.visits || []).forEach(v => addVisitRow(v.date, v.doctorName)); (data.medications || []).forEach(m => addMedRow(m.name, m.isAntibiotic, m.startDate, m.endDate, m.timesPerDay, m.totalDays)); } else { addMedRow(); }
         }
 
         function addVisitRow(d="", n="") { const container = document.getElementById('visit-list-form'); if(!container) return; const div = document.createElement('div'); div.className = 'visit-item-form'; div.innerHTML = `<input type="date" class="ios-input py-2 text-xs font-bold visit-date" value="${d}"><input type="text" placeholder="ФИО врача" class="ios-input py-2 text-xs visit-doctor" value="${n}"><button onclick="this.parentElement.remove()" class="text-rose-300 p-1">✕</button>`; container.appendChild(div); }
-        
         function addMedRow(n="", a=false, s="", e="", t="", d="") { 
             const container = document.getElementById('med-list-form'); if(!container) return; 
-            const rowId = 'med_' + Math.random().toString(36).substr(2, 5); 
-            const div = document.createElement('div'); 
-            div.className = 'med-row'; 
-            div.id = rowId; 
-            div.innerHTML = `
-                <div class="med-header">
-                    <input type="text" placeholder="Название лекарства" class="ios-input py-2 text-sm med-name" value="${n}">
-                    <label class="flex items-center gap-1"><input type="checkbox" class="w-6 h-6 accent-rose-500 med-anti" ${a ? 'checked' : ''} onchange="this.parentElement.parentElement.nextElementSibling.nextElementSibling.classList.toggle('hidden', !this.checked)"><span class="text-[9px] font-black uppercase text-gray-400">Анти</span></label>
-                    <button onclick="this.parentElement.parentElement.remove()" class="text-gray-300 p-1">✕</button>
-                </div>
-                <div class="med-details">
-                    <input type="number" placeholder="Раз в день" class="med-sub-input med-times" value="${t}">
-                    <input type="number" placeholder="Сколько дней" class="med-sub-input med-days" value="${d}">
-                </div>
-                <div class="med-dates ${a ? '' : 'hidden'} grid grid-cols-2 gap-2 mt-1">
-                    <input type="date" class="med-sub-input med-start" value="${s}">
-                    <input type="date" class="med-sub-input med-end" value="${e}">
-                </div>`; 
-            container.appendChild(div); 
+            const row = document.createElement('div'); row.className = 'med-row'; 
+            row.innerHTML = `<div class="med-header"><input type="text" placeholder="Название" class="ios-input py-2 text-sm med-name" value="${n}"><label class="flex items-center gap-1"><input type="checkbox" class="w-6 h-6 accent-rose-500 med-anti" ${a ? 'checked' : ''} onchange="this.parentElement.parentElement.nextElementSibling.nextElementSibling.classList.toggle('hidden', !this.checked)"><span class="text-[9px] font-black uppercase text-gray-400">Анти</span></label><button onclick="this.parentElement.parentElement.remove()" class="text-gray-300 p-1">✕</button></div><div class="med-details"><input type="number" placeholder="Раз в день" class="med-sub-input med-times" value="${t}"><input type="number" placeholder="Сколько дней" class="med-sub-input med-days" value="${d}"></div><div class="med-dates ${a ? '' : 'hidden'} grid grid-cols-2 gap-2 mt-1"><input type="date" class="med-sub-input med-start" value="${s}"><input type="date" class="med-sub-input med-end" value="${e}"></div>`; 
+            container.appendChild(row); 
         }
         
         function saveEntry() {
-            const temps = {};
-            [1,2,3].forEach(d => {
-                const fromVal = document.getElementById(`f-t${d}-from`).value;
-                const toVal = document.getElementById(`f-t${d}-to`).value;
-                temps[d] = { from: fromVal, to: toVal };
-            });
-
-            const meds = [];
-            document.querySelectorAll('#med-list-form .med-row').forEach(row => {
-                const n = row.querySelector('.med-name')?.value;
-                if(n) meds.push({ 
-                    name: n, 
-                    isAntibiotic: row.querySelector('.med-anti').checked, 
-                    startDate: row.querySelector('.med-start').value, 
-                    endDate: row.querySelector('.med-end').value,
-                    timesPerDay: row.querySelector('.med-times').value,
-                    totalDays: row.querySelector('.med-days').value
-                });
-            });
-            const visits = [];
-            document.querySelectorAll('.visit-item-form').forEach(row => {
-                const d = row.querySelector('.visit-date').value, n = row.querySelector('.visit-doctor').value;
-                if(d) visits.push({ date: d, doctorName: n });
-            });
-            const cId = document.getElementById('f-child').value;
-            const notes = document.getElementById('f-notes').value;
-            const recDate = document.getElementById('f-recovery').value;
-            const hasLongFever = document.getElementById('f-more3').checked;
-            const feverDays = document.getElementById('f-days').value;
-            
-            const ent = { 
-                id: editingId || Date.now(), 
-                childId: cId, 
-                date: document.getElementById('f-date').value, 
-                diagnosis: document.getElementById('f-diagnosis').value, 
-                recoveryDate: recDate, 
-                visits, 
-                medications: meds, 
-                notes,
-                temps,
-                hasLongFever,
-                feverDays
-            };
-            
-            if (editingId) { 
-                const idx = db.entries.findIndex(e => e.id === editingId); 
-                db.entries[idx] = ent; 
-            } else {
-                db.entries.push(ent);
-            }
+            const temps = {}; [1,2,3].forEach(d => { temps[d] = { from: document.getElementById(`f-t${d}-from`).value, to: document.getElementById(`f-t${d}-to`).value }; });
+            const meds = []; document.querySelectorAll('#med-list-form .med-row').forEach(row => { const n = row.querySelector('.med-name')?.value; if(n) meds.push({ name: n, isAntibiotic: row.querySelector('.med-anti').checked, startDate: row.querySelector('.med-start').value, endDate: row.querySelector('.med-end').value, timesPerDay: row.querySelector('.med-times').value, totalDays: row.querySelector('.med-days').value }); });
+            const visits = []; document.querySelectorAll('.visit-item-form').forEach(row => { const d = row.querySelector('.visit-date').value, n = row.querySelector('.visit-doctor').value; if(d) visits.push({ date: d, doctorName: n }); });
+            const cId = document.getElementById('f-child').value, notes = document.getElementById('f-notes').value, recDate = document.getElementById('f-recovery').value;
+            const ent = { id: editingId || Date.now(), childId: cId, date: document.getElementById('f-date').value, diagnosis: document.getElementById('f-diagnosis').value, recoveryDate: recDate, visits, medications: meds, notes, temps };
+            if (editingId) { const idx = db.entries.findIndex(e => e.id === editingId); db.entries[idx] = ent; } else db.entries.push(ent);
             save(); closeModal(); render();
         }
 
         function exportToExcel() {
             let csv = "\uFEFFРебенок;Дата;Диагноз;Выздоровление;Лекарства;Заметки\n";
-            db.entries.forEach(e => {
-                const c = db.children.find(ch => ch.id == e.childId)?.name;
-                const m = (e.medications || []).map(med => med.name).join(' | ');
-                csv += `"${c}";"${new Date(e.date).toLocaleDateString()}";"${e.diagnosis}";"${e.recoveryDate || '-'}";"${m}";"${(e.notes || '').replace(/"/g, '""')}"\n`;
-            });
+            db.entries.forEach(e => { const c = db.children.find(ch => ch.id == e.childId)?.name; const m = (e.medications || []).map(med => med.name).join(' | '); csv += `"${c}";"${new Date(e.date).toLocaleDateString()}";"${e.diagnosis}";"${e.recoveryDate || '-'}";"${m}";"${(e.notes || '').replace(/"/g, '""')}"\n`; });
             const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" })); link.download = `kidshealth_export.csv`; link.click();
         }
 
+        function editChildProfile(id) { const child = db.children.find(c => c.id == id); openModal(`<h3 class="text-3xl font-extrabold mb-8">Профиль</h3><div class="space-y-6"><input type="text" id="e-name" value="${child.name}" class="ios-input font-bold"><input type="number" id="e-age" value="${child.age || ''}" class="ios-input font-bold" placeholder="Возраст"><input type="number" id="e-weight" step="0.1" value="${child.weight || ''}" class="ios-input font-bold" placeholder="Вес (кг)"><div class="flex gap-4 pt-6"><button onclick="closeModal()" class="flex-1 py-5 font-bold text-gray-400">Отмена</button><button onclick="updateChild(${child.id})" class="flex-[2] bg-indigo-600 text-white py-5 rounded-[1.5rem] font-bold shadow-xl">Сохранить</button></div></div>`); }
+        function updateChild(id) { const c = db.children.find(child => child.id == id); c.name = document.getElementById('e-name').value; c.weight = document.getElementById('e-weight').value; c.age = document.getElementById('e-age').value; save(); closeModal(); render(); }
+        function showChildModal() { openModal(`<h3 class="text-3xl font-extrabold mb-8 text-center">Новый профиль</h3><div class="space-y-6"><div class="flex justify-center gap-5 mb-6" id="icon-picker" data-icon="👶"><button onclick="document.getElementById('icon-picker').dataset.icon='👦'" class="w-16 h-16 hybrid-card text-2xl flex items-center justify-center">👦</button><button onclick="document.getElementById('icon-picker').dataset.icon='👧'" class="w-16 h-16 hybrid-card text-2xl flex items-center justify-center">👧</button><button onclick="document.getElementById('icon-picker').dataset.icon='👶'" class="w-16 h-16 hybrid-card text-2xl flex items-center justify-center">👶</button></div><input type="text" id="c-name" placeholder="Имя" class="ios-input text-center text-lg font-bold shadow-sm"><input type="number" id="c-age" placeholder="Возраст" class="ios-input text-center"><div class="flex gap-4 pt-4"><button onclick="closeModal()" class="flex-1 py-5 font-bold text-gray-400">Отмена</button><button onclick="saveChild()" class="flex-[2] bg-indigo-600 text-white py-5 rounded-[1.5rem] font-bold shadow-xl">Создать</button></div></div>`); }
+        function saveChild() { const n = document.getElementById('c-name').value; if(n) { db.children.push({ id: Date.now(), name: n, icon: document.getElementById('icon-picker').dataset.icon, weight: "", age: document.getElementById('c-age').value }); save(); closeModal(); renderChildrenTabs(); render(); } }
         function openVaccineModal() { openModal(`<h3 class="text-3xl font-extrabold mb-8">Прививка</h3><div class="space-y-6"><select id="v-child" class="ios-input font-bold">${db.children.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select><input type="text" id="v-name" placeholder="Название" class="ios-input font-bold"><div class="grid grid-cols-2 gap-4"><input type="date" id="v-date" class="ios-input"><select id="v-status" class="ios-input font-bold"><option value="planned">Запланирована</option><option value="done">Сделана</option></select></div><div class="flex gap-4 pt-6"><button onclick="closeModal()" class="flex-1 py-5 font-bold text-gray-400">Отмена</button><button onclick="saveVaccine()" class="flex-[2] bg-emerald-500 text-white py-5 rounded-[1.5rem] font-bold shadow-xl">Сохранить</button></div></div>`); }
         function saveVaccine() { const cs = document.getElementById('v-child'); const v = { id: Date.now(), childId: cs.value, name: document.getElementById('v-name').value, date: document.getElementById('v-date').value, status: document.getElementById('v-status').value }; if(v.name && v.date) { db.vaccinations.push(v); save(); closeModal(); render(); } }
         function deleteEntry(id) { if(confirm('Удалить?')) { db.entries = db.entries.filter(e => e.id !== id); save(); render(); } }
         function deleteVaccine(id) { if(confirm('Удалить?')) { db.vaccinations = db.vaccinations.filter(v => v.id !== id); save(); render(); } }
 
-        // Регистрация Service Worker для офлайн режима
+        // Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                const swScript = `
-                    const CACHE_NAME = 'kh-cache-v1';
-                    const urlsToCache = ['./', 'https://cdn.tailwindcss.com'];
-                    self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(urlsToCache))));
-                    self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
-                `;
+                const swScript = `const C = 'v1'; self.addEventListener('install', e => e.waitUntil(caches.open(C).then(c => c.addAll(['./', 'https://cdn.tailwindcss.com'])))); self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));`;
                 const blob = new Blob([swScript], { type: 'text/javascript' });
                 navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
             });
         }
+        window.addEventListener('online', () => document.getElementById('offline-indicator').style.display = 'none');
+        window.addEventListener('offline', () => document.getElementById('offline-indicator').style.display = 'block');
 
         window.onload = () => { renderChildrenTabs(); render(); };
     </script>
