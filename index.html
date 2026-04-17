@@ -130,9 +130,29 @@
             font-weight: 600;
             width: 100%;
         }
+
+        /* Индикатор офлайн режима */
+        #offline-indicator {
+            position: fixed;
+            top: env(safe-area-inset-top, 20px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 59, 48, 0.9);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            z-index: 9999;
+            display: none;
+            backdrop-filter: blur(10px);
+        }
     </style>
 </head>
 <body class="pb-40">
+
+    <div id="offline-indicator">Офлайн режим</div>
 
     <header class="px-8 pt-10 pb-6 flex justify-between items-center">
         <div>
@@ -373,7 +393,7 @@
                                 </div>
                                 <div class="flex flex-wrap gap-2 mb-3">${e.recoveryDate ? `<span class="px-2 py-1 bg-emerald-50 text-emerald-600 text-[9px] font-black rounded-xl border border-emerald-100 uppercase">✨ Вылечен: ${new Date(e.recoveryDate).toLocaleDateString()}</span>` : ''}</div>
                                 <div class="mb-3">${visitsHtml}</div>
-                                <div class="text-xs text-gray-500 italic mb-2">${e.notes || ''}</div>
+                                <div class="text-xs text-gray-500 italic mb-3">${e.notes || ''}</div>
                                 <div class="space-y-1">${medsHtml}</div>
                             </div>
                         </div>`;
@@ -532,6 +552,40 @@
         function saveVaccine() { const cs = document.getElementById('v-child'); const v = { id: Date.now(), childId: cs.value, name: document.getElementById('v-name').value, date: document.getElementById('v-date').value, status: document.getElementById('v-status').value }; if(v.name && v.date) { db.vaccinations.push(v); save(); closeModal(); render(); } }
         function deleteEntry(id) { if(confirm('Удалить?')) { db.entries = db.entries.filter(e => e.id !== id); save(); render(); } }
         function deleteVaccine(id) { if(confirm('Удалить?')) { db.vaccinations = db.vaccinations.filter(v => v.id !== id); save(); render(); } }
+
+        // Регистрация Service Worker для офлайн режима
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swScript = `
+                    const CACHE_NAME = 'kh-cache-v1';
+                    const urlsToCache = [
+                        './',
+                        'https://cdn.tailwindcss.com',
+                        'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'
+                    ];
+
+                    self.addEventListener('install', event => {
+                        event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));
+                    });
+
+                    self.addEventListener('fetch', event => {
+                        event.respondWith(
+                            caches.match(event.request).then(response => response || fetch(event.request))
+                        );
+                    });
+                `;
+                const blob = new Blob([swScript], { type: 'text/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                
+                if (window.location.protocol === 'https:' || window.location.hostname === 'localhost') {
+                    navigator.serviceWorker.register(swUrl).catch(() => {});
+                }
+            });
+        }
+
+        // Мониторинг сети
+        window.addEventListener('online', () => document.getElementById('offline-indicator').style.display = 'none');
+        window.addEventListener('offline', () => document.getElementById('offline-indicator').style.display = 'block');
 
         window.onload = () => { renderChildrenTabs(); render(); };
     </script>
