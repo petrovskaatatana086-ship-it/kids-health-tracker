@@ -147,6 +147,15 @@
             z-index: 10000;
             display: none;
         }
+
+        .active-illness-item {
+            font-size: 0.75rem;
+            border-bottom: 1px dashed rgba(0,0,0,0.05);
+            padding: 4px 0;
+        }
+        .active-illness-item:last-child {
+            border-bottom: none;
+        }
     </style>
 </head>
 <body class="pb-40">
@@ -311,6 +320,7 @@
         // --- ХЕЛПЕРЫ ---
         function getDaysWord(n) { n = Math.abs(n); let n10 = n % 10, n100 = n % 100; if (n10 == 1 && n100 != 11) return "день"; if (n10 >= 2 && n10 <= 4 && (n100 < 10 || n100 >= 20)) return "дня"; return "дней"; }
         function calculateDuration(start, end) { if (!start || !end) return null; return Math.ceil(Math.abs(new Date(end) - new Date(start)) / (1000 * 60 * 60 * 24)) + 1; }
+        function formatDate(dateStr) { if (!dateStr) return ''; const d = new Date(dateStr); return d.toLocaleDateString(); }
 
         // --- НАВИГАЦИЯ ---
         function switchTab(tabId) {
@@ -343,9 +353,22 @@
             
             // Dashboard
             document.getElementById('health-status-container').innerHTML = list.map(child => {
-                const ce = db.entries.filter(e => e.childId == child.id);
-                const last = ce[ce.length-1];
-                const isHealthy = !last || (last.recoveryDate && last.recoveryDate.trim() !== "");
+                // Активные болезни (нет даты выздоровления)
+                const activeIllnesses = db.entries.filter(e => e.childId == child.id && (!e.recoveryDate || e.recoveryDate.trim() === ""));
+                const isHealthy = activeIllnesses.length === 0;
+                
+                // Формируем список активных болезней с датами
+                let illnessListHtml = '';
+                if (!isHealthy) {
+                    illnessListHtml = `<div class="mt-2 space-y-1 text-xs">`;
+                    activeIllnesses.forEach(ill => {
+                        illnessListHtml += `<div class="active-illness-item flex justify-between items-center">
+                            <span class="font-semibold">${ill.diagnosis}</span>
+                            <span class="text-gray-500 text-[9px]">с ${formatDate(ill.date)}</span>
+                        </div>`;
+                    });
+                    illnessListHtml += `</div>`;
+                }
                 
                 const plannedVaccines = db.vaccinations.filter(v => v.childId == child.id && v.status == 'planned');
                 const vaccineHtml = plannedVaccines.length > 0 ? plannedVaccines.map(v => {
@@ -353,7 +376,10 @@
                     return `<div class="flex items-center justify-between p-3 bg-white/40 rounded-2xl border border-white/60 mb-2"><p class="text-[10px] font-bold text-gray-700">${v.name}</p><div class="flex items-center gap-2">${isOverdue ? '<span class="text-[9px] font-black text-rose-500 uppercase">⚠️ Просрочено</span>' : ''}<p class="text-[9px] font-black text-gray-400">${new Date(v.date).toLocaleDateString()}</p></div></div>`;
                 }).join('') : '<p class="text-[9px] text-gray-400 italic">Прививок нет</p>';
 
-                return `<div class="hybrid-card p-8 shadow-sm ${isHealthy ? 'bg-emerald-50/40' : 'bg-rose-50/40'}"><div class="flex justify-between mb-6"><div class="flex items-center gap-4"><div class="text-4xl drop-shadow-md">${child.icon}</div><div><h4 class="text-xl font-bold">${child.name}</h4><span class="status-badge ${isHealthy ? 'bg-emerald-500/20 text-emerald-600' : 'bg-rose-500/20 text-rose-600'}">${isHealthy ? 'Здоров'+(child.icon==='👦'?'':'а') : last.diagnosis}</span></div></div><button onclick="editChildProfile(${child.id})" class="p-2 text-indigo-400/50 hover:text-indigo-600 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button></div><div class="grid grid-cols-2 gap-3 mb-4"><div class="bg-white/50 p-4 rounded-2xl border border-white/60"><p class="text-[9px] font-black text-gray-400 uppercase">Вес • Возраст</p><p class="font-bold text-xs">${child.weight || '--'} кг • ${child.age || '--'} л</p></div><div class="bg-white/50 p-4 rounded-2xl border border-white/60"><p class="text-[9px] font-black text-gray-400 uppercase">Выздоровление</p><p class="font-bold text-xs">${(last && last.recoveryDate) ? new Date(last.recoveryDate).toLocaleDateString() : '--'}</p></div></div><div class="space-y-2"><p class="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">План прививок:</p>${vaccineHtml}</div></div>`;
+                return `<div class="hybrid-card p-8 shadow-sm ${isHealthy ? 'bg-emerald-50/40' : 'bg-rose-50/40'}"><div class="flex justify-between mb-6"><div class="flex items-center gap-4"><div class="text-4xl drop-shadow-md">${child.icon}</div><div><h4 class="text-xl font-bold">${child.name}</h4><div class="flex flex-wrap items-center gap-2 mt-1">${!isHealthy ? `<div class="status-badge bg-rose-500/20 text-rose-600">Активно: ${activeIllnesses.length}</div>` : `<div class="status-badge bg-emerald-500/20 text-emerald-600">Здоров${child.icon==='👦'?'':'а'}</div>`}</div></div></div><button onclick="editChildProfile(${child.id})" class="p-2 text-indigo-400/50 hover:text-indigo-600 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button></div>
+                    ${!isHealthy ? `<div class="mb-4"><p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Текущие болезни:</p>${illnessListHtml}</div>` : ''}
+                    <div class="grid grid-cols-2 gap-3 mb-4"><div class="bg-white/50 p-4 rounded-2xl border border-white/60"><p class="text-[9px] font-black text-gray-400 uppercase">Вес • Возраст</p><p class="font-bold text-xs">${child.weight || '--'} кг • ${child.age || '--'} л</p></div><div class="bg-white/50 p-4 rounded-2xl border border-white/60"><p class="text-[9px] font-black text-gray-400 uppercase">Активно болезней</p><p class="font-bold text-xs">${activeIllnesses.length}</p></div></div>
+                    <div class="space-y-2"><p class="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">План прививок:</p>${vaccineHtml}</div></div>`;
             }).join('');
 
             if(activeTab === 'history') renderHistory();
